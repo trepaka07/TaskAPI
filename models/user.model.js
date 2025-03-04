@@ -25,18 +25,21 @@ User.create = (user, result) => {
   );
 };
 
-User.findById = (id, result) => {
-  db.query(`SELECT * FROM users WHERE id = ${id};`, (err, res) => {
-    if (err) {
-      console.log("Error: ", err);
-      result(err, null);
-    } else if (res.length) {
-      console.log(`User found with ID ${id}`);
-      result(null, res[0]);
-    } else {
-      result({ error: "User not found" }, null);
+User.findByUsername = (username, result) => {
+  db.query(
+    `SELECT * FROM users WHERE username = '${username}';`,
+    (err, res) => {
+      if (err) {
+        console.log("Error: ", err);
+        result(err, null);
+      } else if (res.length) {
+        console.log(`User found with username ${username}`);
+        result(null, res[0]);
+      } else {
+        result({ error: "User not found", status: 404 }, null);
+      }
     }
-  });
+  );
 };
 
 User.getAll = (result) => {
@@ -47,6 +50,22 @@ User.getAll = (result) => {
     } else {
       console.log("Users: ", res);
       result(null, res);
+    }
+  });
+};
+
+User.validate = (username, password, result) => {
+  User.findByUsername(username, (err, res) => {
+    if (err) {
+      if (err.error) {
+        result({ error: err.error, status: 404 });
+      } else {
+        result(err, null);
+      }
+    } else if (bcrypt.compareSync(password, res.password)) {
+      result(null, {}); // TODO: any response here?
+    } else {
+      result({ error: "Invalid password", status: 401 }, null);
     }
   });
 };

@@ -6,4 +6,6 @@ router.get("/", users.getAll);
 
 router.post("/signup", users.create);
 
+router.post("/login", users.validate);
+
 module.exports = router;
