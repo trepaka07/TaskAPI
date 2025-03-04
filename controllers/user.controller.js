@@ -1,4 +1,5 @@
 const User = require("../models/user.model");
+const { loginSchema, signupSchema } = require("../schema");
 
 exports.getAll = (req, res) => {
   User.getAll((err, data) => {
@@ -11,7 +12,12 @@ exports.getAll = (req, res) => {
 };
 
 exports.create = (req, res) => {
-  // TODO: validate body
+  const validate = signupSchema.safeParse(req.body);
+  if (!validate.success) {
+    console.log(validate.error); // TODO: send specific error
+    res.status(400).send("Invalid user data");
+    return;
+  }
 
   const user = new User(req.body.username, req.body.email, req.body.password);
 
@@ -30,7 +36,12 @@ exports.create = (req, res) => {
 };
 
 exports.validate = (req, res) => {
-  // TODO: validate body
+  const validate = loginSchema.safeParse(req.body);
+  if (!validate.success) {
+    console.log(validate.error); // TODO: send specific error
+    res.status(400).send("Invalid user data");
+    return;
+  }
 
   User.validate(req.body.username, req.body.password, (err) => {
     if (err) {
