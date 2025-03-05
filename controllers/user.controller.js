@@ -1,5 +1,5 @@
 const User = require("../models/user.model");
-const { loginSchema, signupSchema } = require("../schema");
+const { loginSchema, signupSchema, userSchema } = require("../schema");
 
 exports.getAll = (req, res) => {
   User.getAll((err, data) => {
@@ -24,11 +24,9 @@ exports.create = (req, res) => {
   // TODO: send status code with error is fine?
   User.create(user, (err, data) => {
     if (err) {
-      if (err.error) {
-        res.status(err.status).send({ error: err.error });
-      } else {
-        res.status(500).send({ error: "Something went wrong" });
-      }
+      res
+        .status(err.status || 500)
+        .send({ error: err.error || "Something went wrong" });
     } else {
       res.status(201).send(data);
     }
@@ -45,13 +43,28 @@ exports.validate = (req, res) => {
 
   User.validate(req.body.username, req.body.password, (err) => {
     if (err) {
-      if (err.error) {
-        res.status(err.status).send({ error: err.error });
-      } else {
-        res.status(500).send({ error: "Something went wrong" });
-      }
+      res
+        .status(err.status || 500)
+        .send({ error: err.error || "Something went wrong" });
     } else {
       res.send({});
+    }
+  });
+};
+
+exports.delete = (req, res) => {
+  if (!req.body.username) {
+    res.status(400).send({ error: "Username required" });
+    return;
+  }
+
+  User.deleteByUsername(req.body.username, (err, result) => {
+    if (err) {
+      res
+        .status(err.status || 500)
+        .send({ error: err.error || "Something went wrong" });
+    } else {
+      res.status(204).send();
     }
   });
 };

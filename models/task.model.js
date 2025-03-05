@@ -1,5 +1,6 @@
 const db = require("../database/db");
 
+// TODO: object as parameter?
 const Task = function (
   name,
   userId,
@@ -18,12 +19,15 @@ const Task = function (
   this.category = category;
 };
 
+// TODO: check user exists?
 Task.create = (task, result) => {
   const descriptionValue = task.description && `'${task.description}'`;
-  const dateValue = task.due_date && `'${task.due_date}'`;
+  const dateValue = task.due_date && `'${task.due_date}'`; // TODO: format it safely
   const categoryValue = task.category && `'${task.category}'`;
 
-  const sql = `INSERT INTO tasks (name, description, completed, due_date, priority, category, user_id) VALUES ('${task.name}', ${descriptionValue}, ${task.completed}, ${dateValue}, '${task.priority}', ${categoryValue}, ${task.userId});`;
+  const sql = `INSERT INTO tasks (name, description, completed, due_date, priority, category, user_id) 
+  VALUES ('${task.name}', ${descriptionValue}, ${task.completed}, ${dateValue}, '${task.priority}', ${categoryValue}, ${task.userId});`;
+
   db.query(sql, (err, res) => {
     if (err) {
       console.log("Error: ", err);
@@ -62,8 +66,64 @@ Task.findAllByUser = (userId, result) => {
   });
 };
 
-Task.complete = (taskId, result) => {};
-Task.update = (task, result) => {};
-Task.deleteById = (taskId, result) => {};
+Task.toggleComplete = (taskId, result) => {
+  Task.findById(taskId, (err, res) => {
+    if (err) {
+      result(err, null);
+    } else {
+      db.query(
+        `UPDATE tasks SET complete = 1 - complete WHERE id = ${taskId};`,
+        (err) => {
+          if (err) {
+            result(err, null);
+          } else {
+            result(null, { complete: 1 - res.complete, ...res }); // TODO: is this ok?
+          }
+        }
+      );
+    }
+  });
+};
+
+Task.update = (task, result) => {
+  Task.findById(task.id, (err) => {
+    if (err) {
+      result(err, null);
+    } else {
+      const descriptionValue = task.description && `'${task.description}'`;
+      const dateValue = task.due_date && `'${task.due_date}'`; // TODO: format it safely
+      const categoryValue = task.category && `'${task.category}'`;
+
+      const sql = `UPDATE tasks SET name = '${task.name}', description = ${descriptionValue}, completed = ${task.completed}, 
+        due_date = ${dateValue}, priority = '${task.priority}', category = ${categoryValue} WHERE id = ${task.id};`;
+
+      // TODO: test
+
+      db.query(sql, (err, res) => {
+        if (err) {
+          result(err, null);
+        } else {
+          result(null, res);
+        }
+      });
+    }
+  });
+};
+
+Task.deleteById = (taskId, result) => {
+  Task.findById(taskId, (err) => {
+    if (err) {
+      result(err, null);
+    } else {
+      db.query(`DELETE FROM tasks WHERE id = ${taskId};`, (err) => {
+        if (err) {
+          result(err, null);
+        } else {
+          result(null, {}); // TODO: any response here?
+        }
+      });
+    }
+  });
+};
 
 module.exports = Task;

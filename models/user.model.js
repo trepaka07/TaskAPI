@@ -73,11 +73,7 @@ User.validate = (username, password, result) => {
 User.deleteByUsername = (username, password, result) => {
   User.findByUsername(username, (err, res) => {
     if (err) {
-      if (err.error) {
-        result({ error: err.error, status: 404 });
-      } else {
-        result(err, null);
-      }
+      result(err, null);
     } else if (!bcrypt.compareSync(password, res.password)) {
       result({ error: "Invalid password", status: 401 }, null);
     } else {
