@@ -19,7 +19,7 @@ User.create = (user, result) => {
       } else {
         const id = res.insertId;
         console.log(`User created successfully with ID ${id}`);
-        result(null, { id });
+        result(null, { id }); // TODO: return object
       }
     }
   );
@@ -66,6 +66,28 @@ User.validate = (username, password, result) => {
       result(null, {}); // TODO: any response here?
     } else {
       result({ error: "Invalid password", status: 401 }, null);
+    }
+  });
+};
+
+User.deleteByUsername = (username, password, result) => {
+  User.findByUsername(username, (err, res) => {
+    if (err) {
+      if (err.error) {
+        result({ error: err.error, status: 404 });
+      } else {
+        result(err, null);
+      }
+    } else if (!bcrypt.compareSync(password, res.password)) {
+      result({ error: "Invalid password", status: 401 }, null);
+    } else {
+      db.query(`DELETE FROM users WHERE username = ${username};`, (err) => {
+        if (err) {
+          result(err, null);
+        } else {
+          result(null, {}); // TODO: any response here?
+        }
+      });
     }
   });
 };
