@@ -15,7 +15,7 @@ const Task = function (
   this.description = description;
   this.completed = completed;
   this.due_date = due_date;
-  this.priority = priority;
+  this.priority = priority; // TODO: create enum
   this.category = category;
 };
 
@@ -56,6 +56,7 @@ Task.findById = (taskId, result) => {
 };
 
 Task.findAllByUser = (userId, result) => {
+  // TODO: check user exists
   db.query(`SELECT * FROM tasks WHERE user_id = ${userId};`, (err, res) => {
     if (err) {
       console.log("Error: ", err);

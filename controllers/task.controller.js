@@ -11,17 +11,23 @@ exports.create = (req, res) => {
     req.body.category
   );
   Task.create(task, (err, result) => {
-    res.send("");
+    if (err) {
+      res
+        .status(err.status || 500)
+        .send({ error: err.error || "Something went wrong" });
+    } else {
+      res.status(201).send(result);
+    }
   });
 };
 
 exports.findAllByUser = (req, res) => {
-  if (!req.body.username) {
+  if (!req.params.username) {
     res.status(400).send({ error: "Username required" });
     return;
   }
 
-  Task.findAllByUser(req.username, (err, result) => {
+  Task.findAllByUser(req.params.username, (err, result) => {
     if (err) {
       res
         .status(err.status || 500)
@@ -49,13 +55,30 @@ exports.toggleComplete = (req, res) => {
   });
 };
 
+exports.update = (req, res) => {
+  if (!req.body.id || !req.body.name) {
+    res.status(400).send({ error: "Invalid input" }); // TODO: specify
+    return;
+  }
+
+  Task.update(req.body, (err, result) => {
+    if (err) {
+      res
+        .status(err.status || 500)
+        .send({ error: err.error || "Something went wrong" });
+    } else {
+      res.send(result);
+    }
+  });
+};
+
 exports.deleteById = (req, res) => {
-  if (!req.body.id) {
+  if (!req.params.id) {
     res.status(400).send({ error: "TaskID required" });
     return;
   }
 
-  Task.deleteById(req.body.id, (err) => {
+  Task.deleteById(req.params.id, (err) => {
     if (err) {
       res
         .status(err.status || 500)
