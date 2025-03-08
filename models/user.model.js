@@ -1,5 +1,6 @@
 const bcrypt = require("bcrypt");
 const db = require("../database/db");
+const auth = require("../authentication/auth");
 
 const User = function (username, email, password) {
   this.username = username;
@@ -19,7 +20,10 @@ User.create = (user, result) => {
       } else {
         const id = res.insertId;
         console.log(`User created successfully with ID ${id}`);
-        result(null, { id }); // TODO: return JWT
+        const token = auth.generateToken({
+          userId: id,
+        });
+        result(null, { token, id, username: user.username });
       }
     }
   );
@@ -77,7 +81,8 @@ User.validate = (username, password, result) => {
         result(err, null);
       }
     } else if (bcrypt.compareSync(password, res.password)) {
-      result(null, {}); // TODO: return JWT + userId (and username)
+      const token = auth.generateToken({ userId: res.id });
+      result(null, { token, id: res.id, username });
     } else {
       result({ error: "Invalid password", status: 401 }, null);
     }

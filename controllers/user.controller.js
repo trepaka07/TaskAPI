@@ -1,5 +1,5 @@
 const User = require("../models/user.model");
-const { loginSchema, signupSchema, userSchema } = require("../schema");
+const { loginSchema, signupSchema } = require("../schema");
 
 exports.getAll = (req, res) => {
   User.getAll((err, data) => {
@@ -21,7 +21,6 @@ exports.create = (req, res) => {
 
   const user = new User(req.body.username, req.body.email, req.body.password);
 
-  // TODO: send status code with error is fine?
   User.create(user, (err, data) => {
     if (err) {
       res
@@ -41,13 +40,13 @@ exports.validate = (req, res) => {
     return;
   }
 
-  User.validate(req.body.username, req.body.password, (err) => {
+  User.validate(req.body.username, req.body.password, (err, result) => {
     if (err) {
       res
         .status(err.status || 500)
         .send({ error: err.error || "Something went wrong" });
     } else {
-      res.send({});
+      res.send(result);
     }
   });
 };

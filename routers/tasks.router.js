@@ -2,6 +2,8 @@ const express = require("express");
 const router = express.Router();
 const tasks = require("../controllers/task.controller");
 
+router.use(tasks.validateUser);
+
 router.get("/:userId", tasks.findAllByUserId);
 
 router.post("/new", tasks.create);
