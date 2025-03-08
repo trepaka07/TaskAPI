@@ -38,7 +38,7 @@ Task.create = (task, result) => {
         } else {
           const id = res.insertId;
           console.log(`Task created successfully with ID ${id}`);
-          Task.findById(id, (err, newTask) => {
+          Task.findOneById(id, (err, newTask) => {
             if (err) {
               console.log("Error: ", err);
               result(err, null);
@@ -52,7 +52,7 @@ Task.create = (task, result) => {
   });
 };
 
-Task.findById = (taskId, result) => {
+Task.findOneById = (taskId, result) => {
   db.query(`SELECT * FROM tasks WHERE id = ${taskId};`, (err, res) => {
     if (err) {
       console.log("Error: ", err);
@@ -86,7 +86,7 @@ Task.findAllByUserId = (userId, result) => {
 };
 
 Task.toggleComplete = (taskId, result) => {
-  Task.findById(taskId, (err, res) => {
+  Task.findOneById(taskId, (err, res) => {
     if (err) {
       result(err, null);
     } else {
@@ -105,22 +105,32 @@ Task.toggleComplete = (taskId, result) => {
 };
 
 Task.update = (task, result) => {
-  Task.findById(task.id, (err, originalTask) => {
+  Task.findOneById(task.id, (err, originalTask) => {
     if (err) {
       result(err, null);
     } else {
       // TODO: parse date
-      // TODO: handle NULL in originalTask
+      const descriptionValue =
+        task.description || originalTask.description
+          ? `'${task.description || originalTask.description}'`
+          : null;
+      const dateValue =
+        task.due_date || originalTask.due_date
+          ? `'${task.due_date || originalTask.due_date}'`
+          : null; // TODO: parse safely
+      const categoryValue =
+        task.category || originalTask.category
+          ? `'${task.category || originalTask.category}'`
+          : null;
+
       const sql = `UPDATE tasks SET name = '${
         task.name || originalTask.name
-      }', description = '${
-        task.description || originalTask.description
-      }', completed = ${task.completed || originalTask.completed}, 
-        due_date = '${task.due_date || originalTask.due_date}', priority = '${
+      }', description = ${descriptionValue}, completed = ${
+        task.completed || originalTask.completed
+      }, 
+        due_date = ${dateValue}, priority = '${
         task.priority || originalTask.priority
-      }', category = '${task.category || originalTask.category}' WHERE id = ${
-        task.id
-      };`;
+      }', category = ${categoryValue} WHERE id = ${task.id};`;
 
       db.query(sql, (err, res) => {
         if (err) {
@@ -134,7 +144,7 @@ Task.update = (task, result) => {
 };
 
 Task.deleteById = (taskId, result) => {
-  Task.findById(taskId, (err) => {
+  Task.findOneById(taskId, (err) => {
     if (err) {
       result(err, null);
     } else {

@@ -55,10 +55,6 @@ exports.toggleComplete = (req, res) => {
 };
 
 exports.update = (req, res) => {
-  // TODO: delete
-  res.status(500).send({ error: "Unavailable at the moment" });
-  return;
-
   if (!req.body.id) {
     res.status(400).send({ error: "id required" });
     return;
