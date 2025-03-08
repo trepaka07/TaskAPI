@@ -2,7 +2,7 @@ const express = require("express");
 const router = express.Router();
 const tasks = require("../controllers/task.controller");
 
-router.get("/:username", tasks.findAllByUser);
+router.get("/:userId", tasks.findAllByUserId);
 
 router.post("/new", tasks.create);
 

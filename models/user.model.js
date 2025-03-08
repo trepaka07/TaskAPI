@@ -19,10 +19,24 @@ User.create = (user, result) => {
       } else {
         const id = res.insertId;
         console.log(`User created successfully with ID ${id}`);
-        result(null, { id }); // TODO: return object
+        result(null, { id }); // TODO: return JWT
       }
     }
   );
+};
+
+User.findById = (id, result) => {
+  db.query(`SELECT * FROM users WHERE id = ${id};`, (err, res) => {
+    if (err) {
+      console.log("Error: ", err);
+      result(err, null);
+    } else if (res.length) {
+      console.log(`User found with ID ${id}`);
+      result(null, res[0]);
+    } else {
+      result({ error: "User not found", status: 404 }, null);
+    }
+  });
 };
 
 User.findByUsername = (username, result) => {
@@ -63,7 +77,7 @@ User.validate = (username, password, result) => {
         result(err, null);
       }
     } else if (bcrypt.compareSync(password, res.password)) {
-      result(null, {}); // TODO: any response here?
+      result(null, {}); // TODO: return JWT + userId (and username)
     } else {
       result({ error: "Invalid password", status: 401 }, null);
     }
@@ -81,7 +95,7 @@ User.deleteByUsername = (username, password, result) => {
         if (err) {
           result(err, null);
         } else {
-          result(null, {}); // TODO: any response here?
+          result(null, {});
         }
       });
     }

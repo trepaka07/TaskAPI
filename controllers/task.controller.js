@@ -1,15 +1,14 @@
 const Task = require("../models/task.model");
+const { taskSchema } = require("../schema");
 
 exports.create = (req, res) => {
-  const task = new Task(
-    req.body.name,
-    req.body.userId,
-    req.body.description,
-    req.body.completed,
-    req.body.dueDate,
-    req.body.priority,
-    req.body.category
-  );
+  const validate = taskSchema.safeParse(req.body);
+  if (!validate.success) {
+    res.status(400).send({ error: validate.error.flatten().fieldErrors });
+    return;
+  }
+
+  const task = new Task(req.body);
   Task.create(task, (err, result) => {
     if (err) {
       res
@@ -21,13 +20,13 @@ exports.create = (req, res) => {
   });
 };
 
-exports.findAllByUser = (req, res) => {
-  if (!req.params.username) {
-    res.status(400).send({ error: "Username required" });
+exports.findAllByUserId = (req, res) => {
+  if (!req.params.userId) {
+    res.status(400).send({ error: "userId required" });
     return;
   }
 
-  Task.findAllByUser(req.params.username, (err, result) => {
+  Task.findAllByUserId(req.params.userId, (err, result) => {
     if (err) {
       res
         .status(err.status || 500)
@@ -40,7 +39,7 @@ exports.findAllByUser = (req, res) => {
 
 exports.toggleComplete = (req, res) => {
   if (!req.body.id) {
-    res.status(400).send({ error: "TaskID required" });
+    res.status(400).send({ error: "id required" });
     return;
   }
 
@@ -56,8 +55,12 @@ exports.toggleComplete = (req, res) => {
 };
 
 exports.update = (req, res) => {
-  if (!req.body.id || !req.body.name) {
-    res.status(400).send({ error: "Invalid input" }); // TODO: specify
+  // TODO: delete
+  res.status(500).send({ error: "Unavailable at the moment" });
+  return;
+
+  if (!req.body.id) {
+    res.status(400).send({ error: "id required" });
     return;
   }
 
@@ -74,7 +77,7 @@ exports.update = (req, res) => {
 
 exports.deleteById = (req, res) => {
   if (!req.params.id) {
-    res.status(400).send({ error: "TaskID required" });
+    res.status(400).send({ error: "id required" });
     return;
   }
 

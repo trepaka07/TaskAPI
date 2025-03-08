@@ -11,4 +11,9 @@ const loginSchema = z.object({
   password: z.string().min(8), // TODO: contains number
 });
 
-module.exports = { signupSchema, loginSchema };
+const taskSchema = z.object({
+  name: z.string().min(3),
+  userId: z.number(),
+});
+
+module.exports = { signupSchema, loginSchema, taskSchema };
