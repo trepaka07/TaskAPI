@@ -7,7 +7,7 @@ const signupSchema = z.object({
 });
 
 const loginSchema = z.object({
-  username: z.string().min(3), // TODO: or email
+  username: z.string().min(3), // TODO: accept email too
   password: z.string().min(8), // TODO: contains number
 });
 

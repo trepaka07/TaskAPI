@@ -58,8 +58,12 @@ Task.findOneById = (taskId, result) => {
       console.log("Error: ", err);
       result(err, null);
     } else if (res.length) {
-      console.log(`Task found with ID ${taskId}`);
-      result(null, res[0]);
+      if (jwtUser.userId != res[0].user_id) {
+        result({ error: "Access denied", status: 403 }, null);
+      } else {
+        console.log(`Task found with ID ${taskId}`);
+        result(null, res[0]);
+      }
     } else {
       console.log(`Task not found with ID ${taskId}`);
       result({ error: "Task not found", status: 404 }, null);
@@ -68,6 +72,11 @@ Task.findOneById = (taskId, result) => {
 };
 
 Task.findAllByUserId = (userId, result) => {
+  if (jwtUser.userId != userId) {
+    result({ error: "Access denied", status: 403 }, null);
+    return;
+  }
+
   User.findById(userId, (err) => {
     if (err) {
       console.log("Error: ", err);
@@ -96,7 +105,7 @@ Task.toggleComplete = (taskId, result) => {
           if (err) {
             result(err, null);
           } else {
-            result(null, { complete: 1 - res.complete, ...res }); // TODO: is this ok?
+            result(null, { complete: 1 - res.complete, ...res });
           }
         }
       );
@@ -109,7 +118,6 @@ Task.update = (task, result) => {
     if (err) {
       result(err, null);
     } else {
-      // TODO: parse date
       const descriptionValue =
         task.description || originalTask.description
           ? `'${task.description || originalTask.description}'`
@@ -152,7 +160,7 @@ Task.deleteById = (taskId, result) => {
         if (err) {
           result(err, null);
         } else {
-          result(null, {}); // TODO: any response here?
+          result(null, {});
         }
       });
     }

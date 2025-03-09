@@ -67,7 +67,6 @@ exports.findAllByUserId = (req, res) => {
   });
 };
 
-// TODO: check JWT user
 exports.toggleComplete = (req, res) => {
   if (!req.body.id) {
     res.status(400).send({ error: "id required" });
@@ -85,7 +84,6 @@ exports.toggleComplete = (req, res) => {
   });
 };
 
-// TODO: check JWT user
 exports.update = (req, res) => {
   if (!req.body.id) {
     res.status(400).send({ error: "id required" });
@@ -103,7 +101,6 @@ exports.update = (req, res) => {
   });
 };
 
-// TODO: check JWT user
 exports.deleteById = (req, res) => {
   if (!req.params.id) {
     res.status(400).send({ error: "id required" });
