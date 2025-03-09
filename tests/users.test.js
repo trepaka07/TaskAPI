@@ -2,7 +2,7 @@ const request = require("supertest");
 const server = require("../server");
 const { closePool } = require("../database/db");
 
-afterEach(async () => {
+afterAll(async () => {
   await server.close();
   await closePool();
 });
@@ -22,7 +22,7 @@ describe("POST /users/signup", () => {
       email: "testuser@test.com",
       password: "12345678",
     });
-    expect(res.statusCode).toBe(201);
+    expect(res.statusCode).toBe(201 || 303);
     expect(res.body.token).toBeDefined();
   });
 
@@ -78,43 +78,40 @@ describe("POST /users/login", () => {
   });
 });
 
-describe("DELETE /users/:username", () => {
-  it("Delete user without username", async () => {
-    const res = await request(server).delete("/users/delete");
-    expect(res.statusCode).toBe(400);
-    expect(res.body.error).toBeDefined();
-  });
+let loginRes;
 
-  it("Delete user with non-existing username", async () => {
-    const res = await request(server).delete("/users/delete/NonTestUser");
-    expect(res.statusCode).toBe(404);
-    expect(res.body.error).toBeDefined();
-  });
-
+describe("DELETE /users", () => {
   it("Delete user without JWT", async () => {
-    const res = await request(server).delete("/users/delete/TestUser");
+    const res = await request(server).delete("/users");
     expect(res.statusCode).toBe(401);
     expect(res.body.error).toBeDefined();
   });
 
-  it("Delete user without invalid JWT", async () => {
+  it("Delete user with invalid JWT", async () => {
     const res = await request(server)
-      .delete("/users/delete/TestUser")
+      .delete("/users")
       .set("Authorization", `Bearer jhfsjhgndfjklgbjh`);
     expect(res.statusCode).toBe(403);
     expect(res.body.error).toBeDefined();
   });
 
   it("Delete user with valid data", async () => {
-    const loginRes = await request(server).post("/users/login").send({
+    loginRes = await request(server).post("/users/login").send({
       username: "TestUser",
       password: "12345678",
     });
 
     const res = await request(server)
-      .delete("/users/delete/TestUser")
+      .delete("/users")
       .set("Authorization", `Bearer ${loginRes.body.token}`);
-    expect(res.statusCode).toBe(403);
+    expect(res.statusCode).toBe(204);
+  });
+
+  it("Delete user with a non-existing user's token", async () => {
+    const res = await request(server)
+      .delete("/users")
+      .set("Authorization", `Bearer ${loginRes.body.token}`);
+    expect(res.statusCode).toBe(404);
     expect(res.body.error).toBeDefined();
   });
 });

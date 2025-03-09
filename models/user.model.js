@@ -12,7 +12,7 @@ User.create = (user, result) => {
   const hash = bcrypt.hashSync(user.password, 10);
 
   pool.query(
-    `SELECT * FROM users WHERE username = ${user.username} OR email = ${user.email};`,
+    `SELECT * FROM users WHERE username = '${user.username}' OR email = '${user.email}';`,
     (err, res) => {
       if (err) {
         result(err, null);
@@ -99,12 +99,10 @@ User.validate = (username, password, result) => {
   });
 };
 
-User.deleteByUserId = (userId, password, result) => {
+User.deleteByUserId = (userId, result) => {
   User.findById(userId, (err, res) => {
     if (err) {
       result(err, null);
-    } else if (!bcrypt.compareSync(password, res.password)) {
-      result({ error: "Invalid password", status: 401 }, null);
     } else {
       pool.query(`DELETE FROM users WHERE id = ${userId};`, (err) => {
         if (err) {
