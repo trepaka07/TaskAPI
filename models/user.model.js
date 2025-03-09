@@ -1,5 +1,5 @@
 const bcrypt = require("bcrypt");
-const db = require("../database/db");
+const { pool } = require("../database/db");
 const auth = require("../authentication/auth");
 
 const User = function (username, email, password) {
@@ -11,7 +11,7 @@ const User = function (username, email, password) {
 User.create = (user, result) => {
   const hash = bcrypt.hashSync(user.password, 10);
 
-  db.query(
+  pool.query(
     `INSERT INTO users (username, email, password) VALUES ('${user.username}', '${user.email}', '${hash}');`,
     (err, res) => {
       if (err) {
@@ -30,7 +30,7 @@ User.create = (user, result) => {
 };
 
 User.findById = (id, result) => {
-  db.query(`SELECT * FROM users WHERE id = ${id};`, (err, res) => {
+  pool.query(`SELECT * FROM users WHERE id = ${id};`, (err, res) => {
     if (err) {
       console.log("Error: ", err);
       result(err, null);
@@ -44,7 +44,7 @@ User.findById = (id, result) => {
 };
 
 User.findByUsername = (username, result) => {
-  db.query(
+  pool.query(
     `SELECT * FROM users WHERE username = '${username}';`,
     (err, res) => {
       if (err) {
@@ -61,12 +61,11 @@ User.findByUsername = (username, result) => {
 };
 
 User.getAll = (result) => {
-  db.query(`SELECT * FROM users;`, (err, res) => {
+  pool.query(`SELECT * FROM users;`, (err, res) => {
     if (err) {
       console.log("Error: ", err);
       result(err, null);
     } else {
-      console.log("Users: ", res);
       result(null, res);
     }
   });
@@ -96,7 +95,7 @@ User.deleteByUsername = (username, password, result) => {
     } else if (!bcrypt.compareSync(password, res.password)) {
       result({ error: "Invalid password", status: 401 }, null);
     } else {
-      db.query(`DELETE FROM users WHERE username = ${username};`, (err) => {
+      pool.query(`DELETE FROM users WHERE username = ${username};`, (err) => {
         if (err) {
           result(err, null);
         } else {

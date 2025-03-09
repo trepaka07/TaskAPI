@@ -12,4 +12,8 @@ app.use("/users", usersRouter);
 
 app.use("/tasks", tasksRouter);
 
-app.listen(3005, () => console.log(`Listening on PORT ${PORT}...`));
+const server = app.listen(PORT, () =>
+  console.log(`Listening on PORT ${PORT}...`)
+);
+
+module.exports = server;
