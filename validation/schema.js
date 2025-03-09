@@ -13,7 +13,10 @@ const loginSchema = z.object({
 
 const taskSchema = z.object({
   name: z.string().min(3),
-  userId: z.number(),
 });
 
-module.exports = { signupSchema, loginSchema, taskSchema };
+const idSchema = z.object({
+  id: z.number(),
+});
+
+module.exports = { signupSchema, loginSchema, taskSchema, idSchema };

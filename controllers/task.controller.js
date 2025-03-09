@@ -1,18 +1,30 @@
 const Task = require("../models/task.model");
-const { taskSchema } = require("../schema");
+const User = require("../models/user.model");
+const { taskSchema, idSchema } = require("../validation/schema");
+const validateBody = require("../validation/validation");
+
+// TODO: finish
+exports.validateAccess = (req, res, next) => {
+  User.findById(req.user.userId, (err, result) => {
+    if (err) {
+      res
+        .status(err.status || 500)
+        .send({ error: err.error || "Something went wrong" });
+    } else {
+      const validateError = validateBody();
+      Task.findOneById(req.body.id);
+    }
+  });
+};
 
 exports.create = (req, res) => {
-  const validate = taskSchema.safeParse(req.body);
-  if (!validate.success) {
-    res.status(400).send({ error: validate.error.flatten().fieldErrors });
+  const err = validateBody(taskSchema, req.body);
+  if (err) {
+    res.status(400).send(err);
     return;
   }
 
-  if (req.user.userId != req.body.userId) {
-    res.status(403).send({ error: "Access denied" });
-  }
-
-  const task = new Task(req.body);
+  const task = new Task({ userId: req.user.userId, ...req.body });
   Task.create(task, (err, result) => {
     if (err) {
       res
@@ -25,16 +37,7 @@ exports.create = (req, res) => {
 };
 
 exports.findAllByUserId = (req, res) => {
-  if (!req.params.userId) {
-    res.status(400).send({ error: "userId required" });
-    return;
-  }
-
-  if (req.user.userId != req.params.userId) {
-    res.status(403).send({ error: "Access denied" });
-  }
-
-  Task.findAllByUserId(req.params.userId, (err, result) => {
+  Task.findAllByUserId(req.user.userId, (err, result) => {
     if (err) {
       res
         .status(err.status || 500)
@@ -46,25 +49,35 @@ exports.findAllByUserId = (req, res) => {
 };
 
 exports.toggleComplete = (req, res) => {
-  if (!req.body.id) {
-    res.status(400).send({ error: "id required" });
+  const err = validateBody(idSchema, req.body);
+  if (err) {
+    res.status(400).send(err);
     return;
   }
 
-  Task.toggleComplete(req.body.id, (err, result) => {
+  User.findById(req.user.userId, (err) => {
     if (err) {
       res
         .status(err.status || 500)
         .send({ error: err.error || "Something went wrong" });
     } else {
-      res.status(200).send(result);
+      Task.toggleComplete(req.body.id, (err, result) => {
+        if (err) {
+          res
+            .status(err.status || 500)
+            .send({ error: err.error || "Something went wrong" });
+        } else {
+          res.status(200).send(result);
+        }
+      });
     }
   });
 };
 
 exports.update = (req, res) => {
-  if (!req.body.id) {
-    res.status(400).send({ error: "id required" });
+  const err = validateBody(idSchema, req.body);
+  if (err) {
+    res.status(400).send(err);
     return;
   }
 
@@ -80,8 +93,9 @@ exports.update = (req, res) => {
 };
 
 exports.deleteById = (req, res) => {
-  if (!req.params.id) {
-    res.status(400).send({ error: "id required" });
+  const err = validateBody(idSchema, req.params);
+  if (err) {
+    res.status(400).send(err);
     return;
   }
 

@@ -58,12 +58,8 @@ Task.findOneById = (taskId, result) => {
       console.log("Error: ", err);
       result(err, null);
     } else if (res.length) {
-      if (jwtUser.userId != res[0].user_id) {
-        result({ error: "Access denied", status: 403 }, null);
-      } else {
-        console.log(`Task found with ID ${taskId}`);
-        result(null, res[0]);
-      }
+      console.log(`Task found with ID ${taskId}`);
+      result(null, res[0]);
     } else {
       console.log(`Task not found with ID ${taskId}`);
       result({ error: "Task not found", status: 404 }, null);

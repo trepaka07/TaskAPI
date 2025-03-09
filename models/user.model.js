@@ -99,15 +99,14 @@ User.validate = (username, password, result) => {
   });
 };
 
-User.deleteByUsername = (username, password, result) => {
-  User.findByUsername(username, (err, res) => {
+User.deleteByUserId = (userId, password, result) => {
+  User.findById(userId, (err, res) => {
     if (err) {
       result(err, null);
     } else if (!bcrypt.compareSync(password, res.password)) {
       result({ error: "Invalid password", status: 401 }, null);
     } else {
-      // TODO: check JWT userId
-      pool.query(`DELETE FROM users WHERE username = ${username};`, (err) => {
+      pool.query(`DELETE FROM users WHERE id = ${userId};`, (err) => {
         if (err) {
           result(err, null);
         } else {

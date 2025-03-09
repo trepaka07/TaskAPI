@@ -1,5 +1,5 @@
 const User = require("../models/user.model");
-const { loginSchema, signupSchema } = require("../schema");
+const { loginSchema, signupSchema } = require("../validation/schema");
 const auth = require("../authentication/auth");
 
 exports.validateUserToken = (req, res, next) => {
@@ -74,12 +74,7 @@ exports.validate = (req, res) => {
 };
 
 exports.delete = (req, res) => {
-  if (!req.params.username) {
-    res.status(400).send({ error: "Username required" });
-    return;
-  }
-
-  User.deleteByUsername(req.params.username, (err, result) => {
+  User.deleteByUserId(req.user.userId, (err) => {
     if (err) {
       res
         .status(err.status || 500)
