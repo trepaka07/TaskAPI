@@ -1,8 +1,9 @@
 const express = require("express");
 const router = express.Router();
 const tasks = require("../controllers/task.controller");
+const users = require("../controllers/user.controller");
 
-router.use(tasks.validateUser);
+router.use(users.validateUserToken);
 
 router.get("/:userId", tasks.findAllByUserId);
 

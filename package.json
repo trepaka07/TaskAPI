@@ -10,6 +10,7 @@
     "test": "cross-env NODE_ENV=test jest --testTimeout=5000 --detectOpenHandles"
   },
   "dependencies": {
+    "@types/jest": "^29.5.14",
     "bcrypt": "^5.1.1",
     "cross-env": "^7.0.3",
     "dotenv": "^16.4.7",

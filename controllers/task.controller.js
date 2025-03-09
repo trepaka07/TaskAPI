@@ -1,27 +1,5 @@
 const Task = require("../models/task.model");
 const { taskSchema } = require("../schema");
-const auth = require("../authentication/auth");
-
-exports.validateUser = (req, res, next) => {
-  const authHeader = req.headers["authorization"];
-  const token = authHeader && authHeader.split(" ")[1];
-  if (!token) {
-    res
-      .status(401)
-      .send({ error: "Authentication failed. Access token not found" });
-  } else {
-    auth.validateToken(token, (err, user) => {
-      if (err) {
-        res
-          .status(403)
-          .send({ error: "Authentication failed. Invalid access token" });
-      } else {
-        req.user = user;
-        next();
-      }
-    });
-  }
-};
 
 exports.create = (req, res) => {
   const validate = taskSchema.safeParse(req.body);

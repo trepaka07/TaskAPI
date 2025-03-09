@@ -72,11 +72,6 @@ Task.findOneById = (taskId, result) => {
 };
 
 Task.findAllByUserId = (userId, result) => {
-  if (jwtUser.userId != userId) {
-    result({ error: "Access denied", status: 403 }, null);
-    return;
-  }
-
   User.findById(userId, (err) => {
     if (err) {
       console.log("Error: ", err);

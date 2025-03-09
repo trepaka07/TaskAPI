@@ -12,18 +12,29 @@ User.create = (user, result) => {
   const hash = bcrypt.hashSync(user.password, 10);
 
   pool.query(
-    `INSERT INTO users (username, email, password) VALUES ('${user.username}', '${user.email}', '${hash}');`,
+    `SELECT * FROM users WHERE username = ${user.username} OR email = ${user.email};`,
     (err, res) => {
       if (err) {
-        console.log("Error: ", err);
         result(err, null);
+      } else if (res.length && res.length > 0) {
+        result({ error: "User already exists", status: 303 });
       } else {
-        const id = res.insertId;
-        console.log(`User created successfully with ID ${id}`);
-        const token = auth.generateToken({
-          userId: id,
-        });
-        result(null, { token, id, username: user.username });
+        pool.query(
+          `INSERT INTO users (username, email, password) VALUES ('${user.username}', '${user.email}', '${hash}');`,
+          (err, res) => {
+            if (err) {
+              console.log("Error: ", err);
+              result(err, null);
+            } else {
+              const id = res.insertId;
+              console.log(`User created successfully with ID ${id}`);
+              const token = auth.generateToken({
+                userId: id,
+              });
+              result(null, { token, id, username: user.username });
+            }
+          }
+        );
       }
     }
   );
@@ -34,7 +45,7 @@ User.findById = (id, result) => {
     if (err) {
       console.log("Error: ", err);
       result(err, null);
-    } else if (res.length) {
+    } else if (res.length && res.length > 0) {
       console.log(`User found with ID ${id}`);
       result(null, res[0]);
     } else {
@@ -50,7 +61,7 @@ User.findByUsername = (username, result) => {
       if (err) {
         console.log("Error: ", err);
         result(err, null);
-      } else if (res.length) {
+      } else if (res.length && res.length > 0) {
         console.log(`User found with username ${username}`);
         result(null, res[0]);
       } else {
@@ -95,6 +106,7 @@ User.deleteByUsername = (username, password, result) => {
     } else if (!bcrypt.compareSync(password, res.password)) {
       result({ error: "Invalid password", status: 401 }, null);
     } else {
+      // TODO: check JWT userId
       pool.query(`DELETE FROM users WHERE username = ${username};`, (err) => {
         if (err) {
           result(err, null);
