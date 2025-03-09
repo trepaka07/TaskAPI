@@ -98,6 +98,14 @@ describe("DELETE /users/:username", () => {
   });
 
   it("Delete user without invalid JWT", async () => {
+    const res = await request(server)
+      .delete("/users/delete/TestUser")
+      .set("Authorization", `Bearer jhfsjhgndfjklgbjh`);
+    expect(res.statusCode).toBe(403);
+    expect(res.body.error).toBeDefined();
+  });
+
+  it("Delete user with valid data", async () => {
     const loginRes = await request(server).post("/users/login").send({
       username: "TestUser",
       password: "12345678",

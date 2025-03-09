@@ -1,5 +1,4 @@
-const db = require("../database/db");
-const User = require("./user.model");
+const { pool } = require("../database/db");
 
 const Priority = Object.freeze({
   LOW: "Low",
@@ -20,32 +19,26 @@ const Task = function (task) {
 };
 
 Task.create = (task, result) => {
-  User.findById(task.userId, (err) => {
-    if (err) {
-      result(err, null);
-    } else {
-      const descriptionValue = task.description && `'${task.description}'`;
-      const dateValue = task.due_date && `'${task.due_date}'`; // TODO: parse safely
-      const categoryValue = task.category && `'${task.category}'`;
+  const descriptionValue = task.description && `'${task.description}'`;
+  const dateValue = task.due_date && `'${task.due_date}'`; // TODO: parse safely
+  const categoryValue = task.category && `'${task.category}'`;
 
-      const sql = `INSERT INTO tasks (name, description, completed, due_date, priority, category, user_id) 
+  const sql = `INSERT INTO tasks (name, description, completed, due_date, priority, category, user_id) 
       VALUES ('${task.name}', ${descriptionValue}, ${task.completed}, ${dateValue}, '${task.priority}', ${categoryValue}, ${task.userId});`;
 
-      db.query(sql, (err, res) => {
+  pool.query(sql, (err, res) => {
+    if (err) {
+      console.log("Error: ", err);
+      result(err, null);
+    } else {
+      const id = res.insertId;
+      console.log(`Task created successfully with ID ${id}`);
+      Task.findOneById(id, (err, newTask) => {
         if (err) {
           console.log("Error: ", err);
           result(err, null);
         } else {
-          const id = res.insertId;
-          console.log(`Task created successfully with ID ${id}`);
-          Task.findOneById(id, (err, newTask) => {
-            if (err) {
-              console.log("Error: ", err);
-              result(err, null);
-            } else {
-              result(null, newTask);
-            }
-          });
+          result(null, newTask);
         }
       });
     }
@@ -53,7 +46,7 @@ Task.create = (task, result) => {
 };
 
 Task.findOneById = (taskId, result) => {
-  db.query(`SELECT * FROM tasks WHERE id = ${taskId};`, (err, res) => {
+  pool.query(`SELECT * FROM tasks WHERE id = ${taskId};`, (err, res) => {
     if (err) {
       console.log("Error: ", err);
       result(err, null);
@@ -68,92 +61,67 @@ Task.findOneById = (taskId, result) => {
 };
 
 Task.findAllByUserId = (userId, result) => {
-  User.findById(userId, (err) => {
+  pool.query(`SELECT * FROM tasks WHERE user_id = ${userId};`, (err, res) => {
     if (err) {
       console.log("Error: ", err);
       result(err, null);
     } else {
-      db.query(`SELECT * FROM tasks WHERE user_id = ${userId};`, (err, res) => {
-        if (err) {
-          console.log("Error: ", err);
-          result(err, null);
-        } else {
-          result(null, res);
-        }
-      });
+      result(null, res);
     }
   });
 };
 
 Task.toggleComplete = (taskId, result) => {
-  Task.findOneById(taskId, (err, res) => {
-    if (err) {
-      result(err, null);
-    } else {
-      db.query(
-        `UPDATE tasks SET complete = 1 - complete WHERE id = ${taskId};`,
-        (err) => {
-          if (err) {
-            result(err, null);
-          } else {
-            result(null, { complete: 1 - res.complete, ...res });
-          }
-        }
-      );
+  pool.query(
+    `UPDATE tasks SET complete = 1 - complete WHERE id = ${taskId};`,
+    (err) => {
+      if (err) {
+        result(err, null);
+      } else {
+        result(null, { complete: 1 - res.complete, ...res });
+      }
     }
-  });
+  );
 };
 
 Task.update = (task, result) => {
-  Task.findOneById(task.id, (err, originalTask) => {
+  const descriptionValue =
+    task.description || originalTask.description
+      ? `'${task.description || originalTask.description}'`
+      : null;
+  const dateValue =
+    task.due_date || originalTask.due_date
+      ? `'${task.due_date || originalTask.due_date}'`
+      : null; // TODO: parse safely
+  const categoryValue =
+    task.category || originalTask.category
+      ? `'${task.category || originalTask.category}'`
+      : null;
+
+  const sql = `UPDATE tasks SET name = '${
+    task.name || originalTask.name
+  }', description = ${descriptionValue}, completed = ${
+    task.completed || originalTask.completed
+  }, 
+        due_date = ${dateValue}, priority = '${
+    task.priority || originalTask.priority
+  }', category = ${categoryValue} WHERE id = ${task.id};`;
+
+  pool.query(sql, (err, res) => {
     if (err) {
       result(err, null);
     } else {
-      const descriptionValue =
-        task.description || originalTask.description
-          ? `'${task.description || originalTask.description}'`
-          : null;
-      const dateValue =
-        task.due_date || originalTask.due_date
-          ? `'${task.due_date || originalTask.due_date}'`
-          : null; // TODO: parse safely
-      const categoryValue =
-        task.category || originalTask.category
-          ? `'${task.category || originalTask.category}'`
-          : null;
-
-      const sql = `UPDATE tasks SET name = '${
-        task.name || originalTask.name
-      }', description = ${descriptionValue}, completed = ${
-        task.completed || originalTask.completed
-      }, 
-        due_date = ${dateValue}, priority = '${
-        task.priority || originalTask.priority
-      }', category = ${categoryValue} WHERE id = ${task.id};`;
-
-      db.query(sql, (err, res) => {
-        if (err) {
-          result(err, null);
-        } else {
-          result(null, res);
-        }
-      });
+      result(null, res);
     }
   });
 };
 
 Task.deleteById = (taskId, result) => {
-  Task.findOneById(taskId, (err) => {
+  pool.query(`DELETE FROM tasks WHERE id = ${taskId};`, (err) => {
     if (err) {
       result(err, null);
     } else {
-      db.query(`DELETE FROM tasks WHERE id = ${taskId};`, (err) => {
-        if (err) {
-          result(err, null);
-        } else {
-          result(null, {});
-        }
-      });
+      result(null, {});
     }
   });
 };

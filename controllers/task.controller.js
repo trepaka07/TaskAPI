@@ -3,18 +3,10 @@ const User = require("../models/user.model");
 const { taskSchema, idSchema } = require("../validation/schema");
 const validateBody = require("../validation/validation");
 
-// TODO: finish
-exports.validateAccess = (req, res, next) => {
-  User.findById(req.user.userId, (err, result) => {
-    if (err) {
-      res
-        .status(err.status || 500)
-        .send({ error: err.error || "Something went wrong" });
-    } else {
-      const validateError = validateBody();
-      Task.findOneById(req.body.id);
-    }
-  });
+const sendError = (res, err) => {
+  res
+    .status(err.status || 500)
+    .send({ error: err.error || "Something went wrong" });
 };
 
 exports.create = (req, res) => {
@@ -24,26 +16,34 @@ exports.create = (req, res) => {
     return;
   }
 
-  const task = new Task({ userId: req.user.userId, ...req.body });
-  Task.create(task, (err, result) => {
+  User.findById(req.user.userId, (err) => {
     if (err) {
-      res
-        .status(err.status || 500)
-        .send({ error: err.error || "Something went wrong" });
+      sendError(res, err);
     } else {
-      res.status(201).send(result);
+      const task = new Task({ userId: req.user.userId, ...req.body });
+      Task.create(task, (err, result) => {
+        if (err) {
+          sendError(res, err);
+        } else {
+          res.status(201).send(result);
+        }
+      });
     }
   });
 };
 
 exports.findAllByUserId = (req, res) => {
-  Task.findAllByUserId(req.user.userId, (err, result) => {
+  User.findById(req.user.userId, (err, result) => {
     if (err) {
-      res
-        .status(err.status || 500)
-        .send({ error: err.error || "Something went wrong" });
+      sendError(res, err);
     } else {
-      res.send(result);
+      Task.findAllByUserId(req.user.userId, (err, result) => {
+        if (err) {
+          sendError(res, err);
+        } else {
+          res.send(result);
+        }
+      });
     }
   });
 };
@@ -57,17 +57,21 @@ exports.toggleComplete = (req, res) => {
 
   User.findById(req.user.userId, (err) => {
     if (err) {
-      res
-        .status(err.status || 500)
-        .send({ error: err.error || "Something went wrong" });
+      sendError(res, err);
     } else {
-      Task.toggleComplete(req.body.id, (err, result) => {
+      Task.findOneById(req.body.id, (err, result) => {
         if (err) {
-          res
-            .status(err.status || 500)
-            .send({ error: err.error || "Something went wrong" });
+          sendError(res, err);
+        } else if (req.user.userId === result.user_id) {
+          Task.toggleComplete(req.body.id, (err, result) => {
+            if (err) {
+              sendError(res, err);
+            } else {
+              res.send(result);
+            }
+          });
         } else {
-          res.status(200).send(result);
+          res.status(403).send({ error: "Access denied" });
         }
       });
     }
@@ -81,13 +85,25 @@ exports.update = (req, res) => {
     return;
   }
 
-  Task.update(req.body, (err, result) => {
+  User.findById(req.user.userId, (err) => {
     if (err) {
-      res
-        .status(err.status || 500)
-        .send({ error: err.error || "Something went wrong" });
+      sendError(res, err);
     } else {
-      res.send(result);
+      Task.findOneById(req.body.id, (err, result) => {
+        if (err) {
+          sendError(res, err);
+        } else if (req.user.userId === result.user_id) {
+          Task.update(req.body, (err, result) => {
+            if (err) {
+              sendError(res, err);
+            } else {
+              res.send(result);
+            }
+          });
+        } else {
+          res.status(403).send({ error: "Access denied" });
+        }
+      });
     }
   });
 };
@@ -99,13 +115,25 @@ exports.deleteById = (req, res) => {
     return;
   }
 
-  Task.deleteById(req.params.id, (err) => {
+  User.findById(req.user.userId, (err) => {
     if (err) {
-      res
-        .status(err.status || 500)
-        .send({ error: err.error || "Something went wrong" });
+      sendError(res, err);
     } else {
-      res.status(204).send();
+      Task.findOneById(req.body.id, (err, result) => {
+        if (err) {
+          sendError(res, err);
+        } else if (req.user.userId === result.user_id) {
+          Task.deleteById(req.params.id, (err) => {
+            if (err) {
+              sendError(res, err);
+            } else {
+              res.status(204).send();
+            }
+          });
+        } else {
+          res.status(403).send({ error: "Access denied" });
+        }
+      });
     }
   });
 };
