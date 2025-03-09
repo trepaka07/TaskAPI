@@ -7,6 +7,8 @@ afterAll(async () => {
   await closePool();
 });
 
+let loginRes;
+
 describe("GET /users", () => {
   it("Get all users", async () => {
     const res = await request(server).get("/users");
@@ -45,12 +47,12 @@ describe("POST /users/signup", () => {
 
 describe("POST /users/login", () => {
   it("Login with valid data", async () => {
-    const res = await request(server).post("/users/login").send({
+    loginRes = await request(server).post("/users/login").send({
       username: "TestUser",
       password: "12345678",
     });
-    expect(res.statusCode).toBe(200);
-    expect(res.body.token).toBeDefined();
+    expect(loginRes.statusCode).toBe(200);
+    expect(loginRes.body.token).toBeDefined();
   });
 
   it("Login without any data", async () => {
@@ -78,8 +80,6 @@ describe("POST /users/login", () => {
   });
 });
 
-let loginRes;
-
 describe("DELETE /users", () => {
   it("Delete user without JWT", async () => {
     const res = await request(server).delete("/users");
@@ -96,11 +96,6 @@ describe("DELETE /users", () => {
   });
 
   it("Delete user with valid data", async () => {
-    loginRes = await request(server).post("/users/login").send({
-      username: "TestUser",
-      password: "12345678",
-    });
-
     const res = await request(server)
       .delete("/users")
       .set("Authorization", `Bearer ${loginRes.body.token}`);

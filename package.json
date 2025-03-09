@@ -7,7 +7,7 @@
   "type": "commonjs",
   "main": "index.js",
   "scripts": {
-    "test": "cross-env NODE_ENV=test jest --testTimeout=5000 --detectOpenHandles"
+    "test": "cross-env NODE_ENV=test jest --testTimeout=5000 --detectOpenHandles --silent"
   },
   "dependencies": {
     "@types/jest": "^29.5.14",

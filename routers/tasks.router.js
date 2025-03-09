@@ -5,7 +5,7 @@ const users = require("../controllers/user.controller");
 
 router.use(users.validateUserToken);
 
-router.get("/:userId", tasks.findAllByUserId);
+router.get("/", tasks.findAllByUserId);
 
 router.post("/new", tasks.create);
 
