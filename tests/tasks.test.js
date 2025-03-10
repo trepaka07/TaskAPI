@@ -96,6 +96,58 @@ describe("POST /tasks/new", () => {
   });
 });
 
+describe("PUT /tasks/completed", () => {
+  it("Toggle completed with valid data", async () => {
+    const res = await request(server)
+      .put("/tasks/completed")
+      .set("Authorization", `Bearer ${loginRes.body.token}`)
+      .send({ id: newRes.body.id });
+    console.log("res body", res.body);
+    expect(res.statusCode).toBe(200);
+    expect(res.body.completed).toBeTruthy();
+    const res2 = await request(server)
+      .put("/tasks/completed")
+      .set("Authorization", `Bearer ${loginRes.body.token}`)
+      .send({ id: newRes2.body.id });
+    expect(res2.statusCode).toBe(200);
+    expect(res2.body.completed).toBeFalsy();
+  });
+
+  it("Toggle completed without JWT", async () => {
+    const res = await request(server)
+      .put("/tasks/completed")
+      .send({ id: newRes.body.id });
+    expect(res.statusCode).toBe(401);
+    expect(res.body.error).toBeDefined();
+  });
+
+  it("Toggle completed with invalid JWT", async () => {
+    const res = await request(server)
+      .put("/tasks/completed")
+      .set("Authorization", `Bearer fjhdsbfjhdsbnf`)
+      .send({ id: newRes.body.id });
+    expect(res.statusCode).toBe(403);
+    expect(res.body.error).toBeDefined();
+  });
+
+  it("Toggle completed without a body", async () => {
+    const res = await request(server)
+      .put("/tasks/completed")
+      .set("Authorization", `Bearer ${loginRes.body.token}`);
+    expect(res.statusCode).toBe(400);
+    expect(res.body.error).toBeDefined();
+  });
+
+  it("Toggle completed with invalid id", async () => {
+    const res = await request(server)
+      .put("/tasks/completed")
+      .set("Authorization", `Bearer ${loginRes.body.token}`)
+      .send({ id: -1 });
+    expect(res.statusCode).toBe(404);
+    expect(res.body.error).toBeDefined();
+  });
+});
+
 describe("DELETE /tasks/:id", () => {
   it("Delete task without JWT", async () => {
     const res = await request(server).delete(`/tasks/${newRes.body.id}`);

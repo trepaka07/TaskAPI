@@ -12,9 +12,10 @@ const Task = function (task) {
   this.description = task.description || null;
   this.completed = task.completed || false;
   this.due_date = task.due_date || null;
-  this.priority = Priority.hasOwnProperty(task.priority)
-    ? task.priority
-    : Priority.LOW;
+  this.priority =
+    task.priority && Priority.hasOwnProperty(task.priority.toUpperCase())
+      ? task.priority
+      : Priority.LOW;
   this.category = task.category || null;
 };
 
@@ -73,12 +74,18 @@ Task.findAllByUserId = (userId, result) => {
 
 Task.toggleComplete = (taskId, result) => {
   pool.query(
-    `UPDATE tasks SET complete = 1 - complete WHERE id = ${taskId};`,
+    `UPDATE tasks SET completed = 1 - completed WHERE id = ${taskId};`,
     (err) => {
       if (err) {
         result(err, null);
       } else {
-        result(null, { complete: 1 - res.complete, ...res });
+        pool.query(`SELECT * FROM tasks WHERE id = ${taskId};`, (err, res) => {
+          if (err) {
+            result(err, null);
+          } else {
+            result(null, res[0]);
+          }
+        });
       }
     }
   );

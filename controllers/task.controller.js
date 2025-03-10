@@ -50,7 +50,7 @@ exports.findAllByUserId = (req, res) => {
 };
 
 exports.toggleComplete = (req, res) => {
-  const err = validateBody(idSchema, req.body);
+  const err = validateBody(idSchema, { id: parseInt(req.body.id) || "" });
   if (err) {
     res.status(400).send(err);
     return;
@@ -80,7 +80,7 @@ exports.toggleComplete = (req, res) => {
 };
 
 exports.update = (req, res) => {
-  const err = validateBody(idSchema, req.body);
+  const err = validateBody(idSchema, { id: parseInt(req.body.id) || "" });
   if (err) {
     res.status(400).send(err);
     return;
