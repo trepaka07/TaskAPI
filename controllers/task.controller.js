@@ -1,3 +1,4 @@
+const { string } = require("zod");
 const Task = require("../models/task.model");
 const User = require("../models/user.model");
 const { taskSchema, idSchema } = require("../validation/schema");
@@ -109,7 +110,7 @@ exports.update = (req, res) => {
 };
 
 exports.deleteById = (req, res) => {
-  const err = validateBody(idSchema, req.params);
+  const err = validateBody(idSchema, { id: parseInt(req.params.id) || "" });
   if (err) {
     res.status(400).send(err);
     return;
@@ -119,7 +120,7 @@ exports.deleteById = (req, res) => {
     if (err) {
       sendError(res, err);
     } else {
-      Task.findOneById(req.body.id, (err, result) => {
+      Task.findOneById(req.params.id, (err, result) => {
         if (err) {
           sendError(res, err);
         } else if (req.user.userId === result.user_id) {
