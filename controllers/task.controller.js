@@ -94,8 +94,9 @@ exports.update = (req, res) => {
         if (err) {
           sendError(res, err);
         } else if (req.user.userId === result.user_id) {
-          Task.update(req.body, (err, result) => {
+          Task.update(req.body, result, (err, result) => {
             if (err) {
+              console.log("update error", err);
               sendError(res, err);
             } else {
               res.send(result);

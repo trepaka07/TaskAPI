@@ -102,7 +102,6 @@ describe("PUT /tasks/completed", () => {
       .put("/tasks/completed")
       .set("Authorization", `Bearer ${loginRes.body.token}`)
       .send({ id: newRes.body.id });
-    console.log("res body", res.body);
     expect(res.statusCode).toBe(200);
     expect(res.body.completed).toBeTruthy();
     const res2 = await request(server)
@@ -143,6 +142,68 @@ describe("PUT /tasks/completed", () => {
       .put("/tasks/completed")
       .set("Authorization", `Bearer ${loginRes.body.token}`)
       .send({ id: -1 });
+    expect(res.statusCode).toBe(404);
+    expect(res.body.error).toBeDefined();
+  });
+});
+
+describe("PUT /tasks/update", () => {
+  it("Update fields with valid data", async () => {
+    const res = await request(server)
+      .put("/tasks/update")
+      .set("Authorization", `Bearer ${loginRes.body.token}`)
+      .send({
+        id: newRes2.body.id,
+        description: "This is the modified description",
+      });
+    expect(res.statusCode).toBe(200);
+    expect(res.body.description).toBe("This is the modified description");
+    const body2 = {
+      id: newRes.body.id,
+      name: "ModifiedName",
+      description: "This is the updated description",
+      due_date: "2025.05.27",
+      priority: "High",
+      category: "Personal",
+    };
+    const res2 = await request(server)
+      .put("/tasks/update")
+      .set("Authorization", `Bearer ${loginRes.body.token}`)
+      .send(body2);
+    expect(res2.statusCode).toBe(200);
+    expect(res2.body).toBe({ completed: 1, ...body2 });
+  });
+
+  it("Update task without JWT", async () => {
+    const res = await request(server)
+      .put("/tasks/update")
+      .send({ id: newRes.body.id, description: "Updated description" });
+    expect(res.statusCode).toBe(401);
+    expect(res.body.error).toBeDefined();
+  });
+
+  it("Update task with invalid JWT", async () => {
+    const res = await request(server)
+      .put("/tasks/update")
+      .set("Authorization", `Bearer fjhdsbfjhdsbnf`)
+      .send({ id: newRes.body.id, description: "Updated description" });
+    expect(res.statusCode).toBe(403);
+    expect(res.body.error).toBeDefined();
+  });
+
+  it("Update task without a body", async () => {
+    const res = await request(server)
+      .put("/tasks/update")
+      .set("Authorization", `Bearer ${loginRes.body.token}`);
+    expect(res.statusCode).toBe(400);
+    expect(res.body.error).toBeDefined();
+  });
+
+  it("Update task with invalid id", async () => {
+    const res = await request(server)
+      .put("/tasks/update")
+      .set("Authorization", `Bearer ${loginRes.body.token}`)
+      .send({ id: -1, description: "Updated description" });
     expect(res.statusCode).toBe(404);
     expect(res.body.error).toBeDefined();
   });

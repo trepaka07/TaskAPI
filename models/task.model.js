@@ -91,14 +91,18 @@ Task.toggleComplete = (taskId, result) => {
   );
 };
 
-Task.update = (task, result) => {
+// TODO: date conversion, probably globaly in the db
+Task.update = (task, originalTask, result) => {
   const descriptionValue =
     task.description || originalTask.description
       ? `'${task.description || originalTask.description}'`
       : null;
   const dateValue =
     task.due_date || originalTask.due_date
-      ? `'${task.due_date || originalTask.due_date}'`
+      ? `'${
+          task.due_date ||
+          new Date(originalTask.due_date).toISOString().split("T")[0]
+        }'`
       : null; // TODO: parse safely
   const categoryValue =
     task.category || originalTask.category
@@ -114,11 +118,21 @@ Task.update = (task, result) => {
     task.priority || originalTask.priority
   }', category = ${categoryValue} WHERE id = ${task.id};`;
 
-  pool.query(sql, (err, res) => {
+  console.log(originalTask);
+  console.log("update sql", sql);
+
+  pool.query(sql, (err) => {
     if (err) {
       result(err, null);
     } else {
-      result(null, res);
+      pool.query(`SELECT * FROM tasks WHERE id = ${task.id};`, (err, res) => {
+        if (err) {
+          result(err, null);
+        } else {
+          console.log(res[0]);
+          result(null, res[0]);
+        }
+      });
     }
   });
 };
