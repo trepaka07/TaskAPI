@@ -162,7 +162,7 @@ describe("PUT /tasks/update", () => {
       id: newRes.body.id,
       name: "ModifiedName",
       description: "This is the updated description",
-      due_date: "2025.05.27",
+      due_date: "2025-05-27",
       priority: "High",
       category: "Personal",
     };
@@ -171,7 +171,7 @@ describe("PUT /tasks/update", () => {
       .set("Authorization", `Bearer ${loginRes.body.token}`)
       .send(body2);
     expect(res2.statusCode).toBe(200);
-    expect(res2.body).toBe({ completed: 1, ...body2 });
+    expect(res2.body).toStrictEqual({ completed: 1, user_id: 1, ...body2 });
   });
 
   it("Update task without JWT", async () => {

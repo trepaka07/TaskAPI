@@ -36,7 +36,6 @@ exports.getAll = (req, res) => {
 exports.create = (req, res) => {
   const validate = signupSchema.safeParse(req.body);
   if (!validate.success) {
-    console.log(validate.error.flatten());
     res.status(400).send({ error: validate.error.flatten().fieldErrors });
     return;
   }
@@ -57,7 +56,6 @@ exports.create = (req, res) => {
 exports.validate = (req, res) => {
   const validate = loginSchema.safeParse(req.body);
   if (!validate.success) {
-    console.log(validate.error.flatten());
     res.status(400).send({ error: validate.error.flatten().fieldErrors });
     return;
   }

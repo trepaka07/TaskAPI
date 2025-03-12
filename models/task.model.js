@@ -93,16 +93,16 @@ Task.toggleComplete = (taskId, result) => {
 
 // TODO: date conversion, probably globaly in the db
 Task.update = (task, originalTask, result) => {
+  console.log("task", task);
+  console.log("original task", originalTask);
+
   const descriptionValue =
     task.description || originalTask.description
       ? `'${task.description || originalTask.description}'`
       : null;
   const dateValue =
     task.due_date || originalTask.due_date
-      ? `'${
-          task.due_date ||
-          new Date(originalTask.due_date).toISOString().split("T")[0]
-        }'`
+      ? `'${task.due_date || originalTask.due_date}'`
       : null; // TODO: parse safely
   const categoryValue =
     task.category || originalTask.category
@@ -118,7 +118,7 @@ Task.update = (task, originalTask, result) => {
     task.priority || originalTask.priority
   }', category = ${categoryValue} WHERE id = ${task.id};`;
 
-  console.log(originalTask);
+  console.log("date value", originalTask.due_date);
   console.log("update sql", sql);
 
   pool.query(sql, (err) => {
