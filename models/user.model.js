@@ -71,17 +71,6 @@ User.findByUsername = (username, result) => {
   );
 };
 
-User.getAll = (result) => {
-  pool.query(`SELECT * FROM users;`, (err, res) => {
-    if (err) {
-      console.log("Error: ", err);
-      result(err, null);
-    } else {
-      result(null, res);
-    }
-  });
-};
-
 User.validate = (username, password, result) => {
   User.findByUsername(username, (err, res) => {
     if (err) {

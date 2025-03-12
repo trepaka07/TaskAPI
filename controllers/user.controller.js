@@ -23,16 +23,6 @@ exports.validateUserToken = (req, res, next) => {
   }
 };
 
-exports.getAll = (req, res) => {
-  User.getAll((err, data) => {
-    if (err) {
-      res.status(500).send({ error: "Something went wrong" });
-    } else {
-      res.send(data);
-    }
-  });
-};
-
 exports.create = (req, res) => {
   const validate = signupSchema.safeParse(req.body);
   if (!validate.success) {

@@ -9,14 +9,6 @@ afterAll(async () => {
 
 let loginRes;
 
-describe("GET /users", () => {
-  it("Get all users", async () => {
-    const res = await request(server).get("/users");
-    expect(res.statusCode).toBe(200);
-    expect(res.body.length);
-  });
-});
-
 describe("POST /users/signup", () => {
   it("Register a new user with valid data", async () => {
     const res = await request(server).post("/users/signup").send({

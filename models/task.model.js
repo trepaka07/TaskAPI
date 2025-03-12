@@ -21,7 +21,7 @@ const Task = function (task) {
 
 Task.create = (task, result) => {
   const descriptionValue = task.description && `'${task.description}'`;
-  const dateValue = task.due_date && `'${task.due_date}'`; // TODO: parse safely
+  const dateValue = task.due_date && `'${task.due_date}'`;
   const categoryValue = task.category && `'${task.category}'`;
 
   const sql = `INSERT INTO tasks (name, description, completed, due_date, priority, category, user_id) 
@@ -91,7 +91,6 @@ Task.toggleComplete = (taskId, result) => {
   );
 };
 
-// TODO: date conversion, probably globaly in the db
 Task.update = (task, originalTask, result) => {
   console.log("task", task);
   console.log("original task", originalTask);
@@ -103,7 +102,7 @@ Task.update = (task, originalTask, result) => {
   const dateValue =
     task.due_date || originalTask.due_date
       ? `'${task.due_date || originalTask.due_date}'`
-      : null; // TODO: parse safely
+      : null;
   const categoryValue =
     task.category || originalTask.category
       ? `'${task.category || originalTask.category}'`
